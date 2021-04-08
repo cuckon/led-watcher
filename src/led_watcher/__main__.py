@@ -1,7 +1,12 @@
 import random
+import asyncio
 import time
 import traceback
+import sys
+from functools import partial
 from RPi import GPIO
+
+from led_watcher import watchers
 
 BTN = 12
 PIN_BY_LED_COLOR = dict(
@@ -28,38 +33,35 @@ def on_button_pressed(_):
         GPIO.output(pin, False)
 
 
-def has_error():
-    return random.random() > 0.95
+# def has_error():
+#     return random.random() > 0.95
 
 
-def has_warning():
-    return random.random() > 0.95
+# def has_warning():
+#     return random.random() > 0.95
 
 
-def time_to_forage():
-    return random.random() > 0.95
+# def time_to_forage():
+#     return random.random() > 0.95
 
 
-def check_status():
-    state_by_color = {
-        'red': has_error(),
-        'yellow': has_warning(),
-        'blue': time_to_forage(),
-    }
-
-    for color, state in state_by_color.items():
-        if state:
-            GPIO.output(PIN_BY_LED_COLOR[color], True)
+def callback(light_color, state):
+    if state:
+        GPIO.output(PIN_BY_LED_COLOR[light_color], True)
 
 
-def loop():
+async def main():
+    await asyncio.gather(
+        watchers.EventWatcher(50, 5, partial(callback, 'red')).run(),
+        watchers.EventWatcher(40, 5, partial(callback, 'yellow')).run(),
+    )
+
+def run():
     try:
-        while True:
-            check_status()
-            time.sleep(POLLING_INTERVAL)
+        asyncio.run(main())
     except:
         traceback.print_exc()
         GPIO.cleanup()
 
 init()
-loop()
+run()

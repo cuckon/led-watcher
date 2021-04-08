@@ -1,0 +1,2 @@
+export PYTHONPATH='/home/pi/code/led-watcher/src:/usr/lib/python3/dist-packages'
+python -m led_watcher
