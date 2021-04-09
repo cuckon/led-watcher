@@ -47,13 +47,14 @@ def on_button_pressed(_):
 
 def callback(light_color, state):
     if state:
+        print(light_color)
         GPIO.output(PIN_BY_LED_COLOR[light_color], True)
 
 
 async def main():
     await asyncio.gather(
         watchers.EventWatcher(50, 5, partial(callback, 'red')).run(),
-        watchers.EventWatcher(40, 5, partial(callback, 'yellow')).run(),
+        watchers.EventWatcher(10, 5, partial(callback, 'yellow')).run(),
     )
 
 def run():
@@ -61,6 +62,7 @@ def run():
         asyncio.run(main())
     except:
         traceback.print_exc()
+    finally:
         GPIO.cleanup()
 
 init()

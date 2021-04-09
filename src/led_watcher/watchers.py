@@ -37,15 +37,19 @@ class EventWatcher(WatcherBase):
         super(EventWatcher, self).__init__(interval, callback)
         self.level = level
         self._last_check_point = datetime.datetime.now() - \
-            datetime.timedelta(self.interval)
+            datetime.timedelta(seconds=self.interval)
 
     def state(self):
         url = url_events(
             self.level, self.level + 10, self._last_check_point.isoformat()
         )
         self._last_check_point = datetime.datetime.now()
+
         response = requests.get(url)
-        print(url)
+        if response.status_code != 200:
+            print(response.text)
+            return 1
+
         if response.json()['count']:
             return 1
         return 0
