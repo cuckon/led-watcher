@@ -16,13 +16,14 @@ url_events = (
 class WatcherBase:
     def __init__(self, interval, callback):
         self.interval = interval
+        self.time_delta = datetime.timedelta(seconds=interval)
         self.callback = callback
+        self._last_check_point = datetime.datetime.now() - self.time_delta
 
         self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(logging.StreamHandler())
-        self.logger.setLevel(logging.DEBUG)
 
     def state(self):
+        self._last_check_point = datetime.datetime.now()
         return 0
 
     async def run(self):
@@ -31,25 +32,34 @@ class WatcherBase:
             await asyncio.sleep(self.interval)
 
 
+class TimeWatcher(WatcherBase):
+    def __init__(self, timetuple, interval, callback):
+        super(TimeWatcher, self).__init__(interval, callback)
+        self.time = datetime.time(*timetuple)
 
-# class TimerWatcher(WatcherBase):
-#     def __init__(self, check_point):
-#         self._state = False
+    def state(self):
+        now = datetime.datetime.now()
+
+        # TODO: be cautious of the edge cases?
+        hit = self._last_check_point.time() < self.time <= now.time()
+
+        self._last_check_point = now
+        return hit
 
 
 class EventWatcher(WatcherBase):
     def __init__(self, level_range, interval, callback):
         super(EventWatcher, self).__init__(interval, callback)
         self.level_range = level_range
-        self._last_check_point = datetime.datetime.now() - \
-            datetime.timedelta(seconds=self.interval)
 
     def state(self):
         url = url_events(
             self.level_range[0], self.level_range[1],
             self._last_check_point.isoformat()
         )
-        self._last_check_point = datetime.datetime.now()
+
+        # TODO: rename `state()` properly
+        super(EventWatcher, self).state()   # update
 
         response = requests.get(url)
         if response.status_code != 200:
@@ -58,6 +68,7 @@ class EventWatcher(WatcherBase):
 
         data = response.json()
         if data['count']:
+            self.logger.debug(url)
             self.logger.debug(data['data'])
             return 1
         return 0

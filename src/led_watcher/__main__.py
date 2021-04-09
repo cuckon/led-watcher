@@ -18,8 +18,11 @@ PIN_BY_LED_COLOR = dict(
 )
 BEEP = 16
 POLLING_INTERVAL = 0.5
-logger = logging.getLogger('led_watcher')
 
+# Init logger
+logger = logging.getLogger('led_watcher')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 def init():
     # Init GPIO pins
@@ -33,10 +36,6 @@ def init():
         BTN, GPIO.RISING, callback=on_button_pressed, bouncetime=200
     )
 
-    # Init logger
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.DEBUG)
-
 
 def on_button_pressed(_):
     for pin in PIN_BY_LED_COLOR.values():
@@ -46,6 +45,7 @@ def on_button_pressed(_):
 def beep_info():
     GPIO.output(BEEP, True)
     time.sleep(0.005)
+    GPIO.output(BEEP, False)
 
 
 def beep_warning():
@@ -72,29 +72,41 @@ def callback(light_color, beep, state):
 
 async def main():
     error_watcher = watchers.EventWatcher(
-        level_range=(40, 60),
+        level_range=(logging.ERROR, logging.ERROR + 50),
         interval=5,
         callback=partial(callback, 'red', beep_error)
     )
     warning_watcher = watchers.EventWatcher(
-        level_range=(30, 40),
+        level_range=(logging.WARNING, logging.ERROR),
         interval=5,
         callback=partial(callback, 'yellow', beep_warning)
+    )
+    launch_watcher = watchers.TimeWatcher(
+        timetuple=(22, 7),
+        interval=5,
+        callback=partial(callback, 'blue', beep_info)
+    )
+    dinner_watcher = watchers.TimeWatcher(
+        timetuple=(22, 8),
+        interval=5,
+        callback=partial(callback, 'blue', beep_info)
     )
     await asyncio.gather(
         error_watcher.run(),
         warning_watcher.run(),
+        launch_watcher.run(),
+        dinner_watcher.run(),
     )
 
 
-def run():
+try:
     logger.info('Start watching..')
-    try:
-        asyncio.run(main())
-    except:
-        traceback.print_exc()
-    finally:
-        GPIO.cleanup()
-
-init()
-run()
+    init()
+    asyncio.run(main())
+except KeyboardInterrupt:
+    logger.info('Stop..')
+except:
+    logger.error(traceback.format_exc())
+finally:
+    GPIO.cleanup()
+    print('Cleaned up.')
