@@ -17,6 +17,7 @@ logger = logging.getLogger('led_watcher')
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
+
 def init():
     """Init GPIO pins"""
     GPIO.setmode(GPIO.BOARD)
@@ -91,12 +92,12 @@ async def main():
         callback=partial(callback, 'yellow', beep_warning)
     )
     launch_watcher = watchers.TimeWatcher(
-        timetuple=(22, 7),
+        timetuple=(11, 45),
         interval=5,
         callback=partial(callback, 'blue', beep_info)
     )
     dinner_watcher = watchers.TimeWatcher(
-        timetuple=(22, 8),
+        timetuple=(18, 0),
         interval=5,
         callback=partial(callback, 'blue', beep_info)
     )
