@@ -53,7 +53,7 @@ def beep_warning():
         GPIO.output(BEEP, True)
         time.sleep(0.05)
         GPIO.output(BEEP, False)
-        time.sleep(0.05)
+        time.sleep(0.1)
 
 
 def beep_error():
@@ -62,17 +62,6 @@ def beep_error():
         time.sleep(0.03)
         GPIO.output(BEEP, False)
         time.sleep(0.03)
-
-
-# def beep(level):
-#     if level < logging.INFO:
-#         return
-#     if level < logging.WARNING:
-#         _beep_info()
-#     elif level < logging.ERROR:
-#         _beep_warning()
-#     else:
-#         _beep_error()
 
 
 def callback(light_color, beep, state):
