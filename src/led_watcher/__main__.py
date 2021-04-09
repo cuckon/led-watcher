@@ -25,12 +25,12 @@ logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 
 def init():
-    # Init GPIO pins
+    """Init GPIO pins"""
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(BTN, GPIO.IN, GPIO.PUD_DOWN)
-    for pin in PIN_BY_LED_COLOR.values():
+    for pin in list(PIN_BY_LED_COLOR.values()) + [BEEP]:
         GPIO.setup(pin, GPIO.OUT)
-    GPIO.setup(BEEP, GPIO.OUT)
+        GPIO.output(pin, False)
 
     GPIO.add_event_detect(
         BTN, GPIO.RISING, callback=on_button_pressed, bouncetime=200

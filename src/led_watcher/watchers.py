@@ -1,3 +1,4 @@
+import os
 import enum
 import asyncio
 import datetime
@@ -7,7 +8,8 @@ import requests
 
 
 url_events = (
-    'http://eventlog.rs.netease.com/api/v1/events?level__gte={}&level__lt={}'
+    f'{os.environ["EVENTLOG_SERVER"]}/api/v1/events'
+    '?level__gte={}&level__lt={}'
     '&timestamp__gt={}'
     .format
 )
