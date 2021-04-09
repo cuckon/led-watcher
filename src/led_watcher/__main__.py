@@ -9,15 +9,8 @@ from functools import partial
 from RPi import GPIO
 
 from led_watcher import watchers
+from led_watcher.constants import BTN, PIN_BY_LED_COLOR, BEEP
 
-BTN = 12
-PIN_BY_LED_COLOR = dict(
-    red = 11,
-    yellow = 13,
-    blue = 15,
-)
-BEEP = 16
-POLLING_INTERVAL = 0.5
 
 # Init logger
 logger = logging.getLogger('led_watcher')
@@ -33,7 +26,10 @@ def init():
         GPIO.output(pin, False)
 
     GPIO.add_event_detect(
-        BTN, GPIO.RISING, callback=on_button_pressed, bouncetime=200
+        BTN,
+        GPIO.RISING,
+        callback=on_button_pressed,
+        bouncetime=200
     )
 
 
@@ -42,32 +38,45 @@ def on_button_pressed(_):
         GPIO.output(pin, False)
 
 
-def beep_info():
+async def beep_info():
     GPIO.output(BEEP, True)
-    time.sleep(0.005)
+    await asyncio.sleep(0.005)
     GPIO.output(BEEP, False)
 
 
-def beep_warning():
+async def beep_warning():
     for i in range(2):
         GPIO.output(BEEP, True)
-        time.sleep(0.05)
+        await asyncio.sleep(0.05)
         GPIO.output(BEEP, False)
-        time.sleep(0.1)
+        await asyncio.sleep(0.1)
 
 
-def beep_error():
+async def beep_error():
     for i in range(4):
         GPIO.output(BEEP, True)
-        time.sleep(0.03)
+        await asyncio.sleep(0.03)
         GPIO.output(BEEP, False)
-        time.sleep(0.03)
+        await asyncio.sleep(0.03)
 
 
-def callback(light_color, beep, state):
+async def turn_on(light_color, blink=False):
+    pin = PIN_BY_LED_COLOR[light_color]
+    if blink:
+        for i in range(10):
+            GPIO.output(pin, True)
+            await asyncio.sleep(0.1)
+            GPIO.output(pin, False)
+            await asyncio.sleep(0.1)
+    GPIO.output(pin, True)
+
+
+async def callback(light_color, beep, state):
     if state:
-        GPIO.output(PIN_BY_LED_COLOR[light_color], True)
-        beep()
+        await asyncio.gather(
+            turn_on(light_color, True),
+            beep(),
+        )
 
 
 async def main():

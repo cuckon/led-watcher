@@ -30,7 +30,7 @@ class WatcherBase:
 
     async def run(self):
         while True:
-            self.callback(self.state())
+            await self.callback(self.state())
             await asyncio.sleep(self.interval)
 
 
