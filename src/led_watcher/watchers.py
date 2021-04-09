@@ -1,6 +1,7 @@
 import enum
 import asyncio
 import datetime
+import logging
 
 import requests
 
@@ -16,6 +17,10 @@ class WatcherBase:
     def __init__(self, interval, callback):
         self.interval = interval
         self.callback = callback
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.StreamHandler())
+        self.logger.setLevel(logging.DEBUG)
 
     def state(self):
         return 0
@@ -33,23 +38,26 @@ class WatcherBase:
 
 
 class EventWatcher(WatcherBase):
-    def __init__(self, level, interval, callback):
+    def __init__(self, level_range, interval, callback):
         super(EventWatcher, self).__init__(interval, callback)
-        self.level = level
+        self.level_range = level_range
         self._last_check_point = datetime.datetime.now() - \
             datetime.timedelta(seconds=self.interval)
 
     def state(self):
         url = url_events(
-            self.level, self.level + 10, self._last_check_point.isoformat()
+            self.level_range[0], self.level_range[1],
+            self._last_check_point.isoformat()
         )
         self._last_check_point = datetime.datetime.now()
 
         response = requests.get(url)
         if response.status_code != 200:
-            print(response.text)
+            self.logger.error(response.text)
             return 1
 
-        if response.json()['count']:
+        data = response.json()
+        if data['count']:
+            self.logger.debug(data['data'])
             return 1
         return 0
