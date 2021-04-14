@@ -1,1 +1,3 @@
-python -m led_watcher
+export EVENTLOG_SERVER=http://eventlog.rs.netease.com
+export PYTHONPATH='/home/pi/code/led-watcher/src:/usr/lib/python3/dist-packages'
+python3 -m led_watcher

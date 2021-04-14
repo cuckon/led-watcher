@@ -61,52 +61,65 @@ async def beep_error():
         await asyncio.sleep(0.03)
 
 
-async def turn_on(light_color, blink=False):
+async def turn_on(light_color):
+    """ Turn on light blinkly.
+    """
+    for i in range(10):
+        await blink(light_color, 0.1)
+    GPIO.output(PIN_BY_LED_COLOR[light_color], True)
+
+
+async def blink(light_color, duration=0.05):
     pin = PIN_BY_LED_COLOR[light_color]
-    if blink:
-        for i in range(10):
-            GPIO.output(pin, True)
-            await asyncio.sleep(0.1)
-            GPIO.output(pin, False)
-            await asyncio.sleep(0.1)
     GPIO.output(pin, True)
-
-
-async def callback(light_color, beep, state):
-    if state:
-        await asyncio.gather(
-            turn_on(light_color, True),
-            beep(),
-        )
+    await asyncio.sleep(duration)
+    GPIO.output(pin, False)
+    await asyncio.sleep(duration)
 
 
 async def main():
-    error_watcher = watchers.EventWatcher(
-        level_range=(logging.ERROR, logging.ERROR + 50),
-        interval=5,
-        callback=partial(callback, 'red', beep_error)
-    )
-    warning_watcher = watchers.EventWatcher(
-        level_range=(logging.WARNING, logging.ERROR),
-        interval=5,
-        callback=partial(callback, 'yellow', beep_warning)
-    )
-    launch_watcher = watchers.TimeWatcher(
-        timetuple=(11, 45),
-        interval=5,
-        callback=partial(callback, 'blue', beep_info)
-    )
-    dinner_watcher = watchers.TimeWatcher(
-        timetuple=(18, 0),
-        interval=5,
-        callback=partial(callback, 'blue', beep_info)
-    )
-    await asyncio.gather(
-        error_watcher.run(),
-        warning_watcher.run(),
-        launch_watcher.run(),
-        dinner_watcher.run(),
-    )
+    all_watchers = [
+        watchers.EventWatcher(
+            level_range=(logging.ERROR, logging.ERROR + 50),
+            interval=5,
+            callbacks=[
+                (turn_on, ['red']),
+                (beep_error, []),
+            ]
+        ),
+        watchers.EventWatcher(
+            level_range=(logging.WARNING, logging.ERROR),
+            interval=5,
+            callbacks=[
+                (turn_on, ['yellow']),
+                (beep_warning, []),
+            ]
+        ),
+        watchers.TimeWatcher(
+            timetuple=(11, 45),
+            interval=5,
+            callbacks=[
+                (turn_on, ['blue']),
+                (beep_info, []),
+            ]
+        ),
+        watchers.TimeWatcher(
+            timetuple=(18, 0),
+            interval=5,
+            callbacks=[
+                (turn_on, ['blue']),
+                (beep_info, []),
+            ]
+        ),
+        watchers.CycleWatcher(
+            interval=1,
+            callbacks=[
+                (blink, ['blue']),
+            ]
+        ),
+    ]
+    # await all_watchers[0].run()
+    await asyncio.gather(*[w.run() for w in all_watchers])
 
 
 try:
