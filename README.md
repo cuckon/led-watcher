@@ -12,6 +12,7 @@ It uses 3 LEDs and a buzzer to indicate the events you are interested in. Like w
 - "Mark as read" button.
 - Lights are blinkly turned on, which makes it easy for you to tell which light it is after you hear the beep and head up.
 - Utilized `asyncio`. So everything is cocurrent on a single thread.
+- *Blue* light blink periodically to indicate the system is alive.
 
 ### Limitations
 - As mentioned earlier the whole point of this project is for personal study purpose which means it's not for production.
