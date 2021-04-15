@@ -2,6 +2,7 @@ import asyncio
 
 from RPi import GPIO
 from led_watcher.constants import PIN_BY_LED_COLOR, BEEP
+from led_watcher.status import status
 
 
 async def beep_info():
@@ -40,3 +41,9 @@ async def blink(light_color, duration=0.05):
     await asyncio.sleep(duration)
     GPIO.output(pin, False)
     await asyncio.sleep(duration)
+
+
+async def blink_if_off(light_color, duration):
+    if status.get(PIN_BY_LED_COLOR[light_color]):
+        return
+    await blink(light_color, duration)
