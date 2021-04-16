@@ -2,8 +2,11 @@ import os
 import asyncio
 import datetime
 import logging
+import traceback
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 url_events = (
@@ -60,6 +63,14 @@ class EventWatcher(WatcherBase):
     def __init__(self, level_range, interval, callbacks):
         super(EventWatcher, self).__init__(interval, callbacks)
         self.level_range = level_range
+        self.session = requests.Session()
+        retries = Retry(
+            total=5,
+            backoff_factor=1,
+            status_forcelist=[502, 503, 504]
+        )
+        self.session.mount('http://', HTTPAdapter(max_retries=retries))
+        self.session.mount('https://', HTTPAdapter(max_retries=retries))
 
     def state(self):
         url = url_events(
@@ -70,7 +81,12 @@ class EventWatcher(WatcherBase):
         # TODO: rename `state()` properly
         super(EventWatcher, self).state()   # update
 
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            self.logger.error(traceback.format_exc())
+            return 2
+
         if response.status_code != 200:
             self.logger.error(response.text)
             return 1
@@ -79,4 +95,5 @@ class EventWatcher(WatcherBase):
         if data['count']:
             self.logger.debug(data['data'])
             return 1
+
         return 0
