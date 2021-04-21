@@ -84,7 +84,6 @@ class EventWatcher(WatcherBase):
         try:
             response = requests.get(url)
         except requests.exceptions.ConnectionError:
-            self.logger.error(traceback.format_exc())
             return 2
 
         if response.status_code != 200:
