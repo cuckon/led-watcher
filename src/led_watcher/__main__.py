@@ -7,6 +7,7 @@ from RPi import GPIO
 from led_watcher import watchers, callbacks
 from led_watcher.constants import BTN, PIN_BY_LED_COLOR, BEEP
 from led_watcher.status import status
+from led_watcher.controller import main
 
 
 # Init logger
@@ -48,63 +49,38 @@ def on_button_pressed(_):
         GPIO.output(pin, False)
 
 
-async def main():
-    all_watchers = [
-        watchers.EventWatcher(
-            level_range=(logging.ERROR, logging.ERROR + 50),
-            interval=5,
-            callbacks=[
-                (callbacks.turn_on, ['red']),
-                (callbacks.beep_error, []),
-            ]
-        ),
-        watchers.EventWatcher(
-            level_range=(logging.WARNING, logging.ERROR),
-            interval=30,
-            callbacks=[
-                (callbacks.turn_on, ['yellow']),
-                (callbacks.beep_warning, []),
-            ]
-        ),
-        watchers.TimeWatcher(
-            timetuple=(11, 45),
-            interval=5,
-            callbacks=[
-                (callbacks.turn_on, ['blue']),
-                (callbacks.beep_info, []),
-            ]
-        ),
-        watchers.TimeWatcher(
-            timetuple=(18, 0),
-            interval=5,
-            callbacks=[
-                (callbacks.turn_on, ['blue']),
-                (callbacks.beep_info, []),
-            ]
-        ),
-        watchers.TimeWatcher(
-            timetuple=(23, 48),
-            interval=5,
-            callbacks=[
-                (callbacks.turn_on, ['blue']),
-                (callbacks.beep_info, []),
-            ]
-        ),
-        watchers.CycleWatcher(
-            interval=3,
-            callbacks=[
-                (callbacks.blink_if_off, ['blue', 0.01]),
-            ]
-        ),
-    ]
-    # await all_watchers[0].run()
-    await asyncio.gather(*[w.run() for w in all_watchers])
+# async def main():
+all_watchers = [
+    watchers.EventWatcher(
+        level_range=(logging.ERROR, logging.ERROR + 50),
+        interval=5,
+    ),
+    watchers.EventWatcher(
+        level_range=(logging.WARNING, logging.ERROR),
+        interval=30,
+    ),
+    watchers.TimeWatcher(
+        timetuple=(11, 45),
+        interval=5,
+    ),
+    watchers.TimeWatcher(
+        timetuple=(18, 0),
+        interval=5,
+    ),
+    watchers.TimeWatcher(
+        timetuple=(23, 48),
+        interval=5,
+    ),
+    watchers.CycleWatcher(
+        interval=3,
+    ),
+]
 
 
 try:
     LOGGER.info('Start watching..')
     init()
-    asyncio.run(main())
+    asyncio.run(main(all_watchers))
 except KeyboardInterrupt:
     LOGGER.info('Stop..')
 except:

@@ -18,10 +18,9 @@ url_events = (
 
 
 class WatcherBase:
-    def __init__(self, interval, callbacks):
+    def __init__(self, interval):
         self.interval = interval
         self.time_delta = datetime.timedelta(seconds=interval)
-        self.callbacks = callbacks
         self._last_check_point = datetime.datetime.now() - self.time_delta
 
         self.logger = logging.getLogger(__name__)
@@ -30,18 +29,15 @@ class WatcherBase:
         self._last_check_point = datetime.datetime.now()
         return 0
 
-    async def run(self):
+    async def watch(self):
         while True:
-            if self.state():
-                await asyncio.gather(
-                    *[coro(*args) for coro, args in self.callbacks]
-                )
             await asyncio.sleep(self.interval)
+            yield self.state()
 
 
 class TimeWatcher(WatcherBase):
-    def __init__(self, timetuple, interval, callbacks):
-        super(TimeWatcher, self).__init__(interval, callbacks)
+    def __init__(self, timetuple, interval):
+        super(TimeWatcher, self).__init__(interval)
         self.time = datetime.time(*timetuple)
 
     def state(self):
@@ -60,8 +56,8 @@ class CycleWatcher(WatcherBase):
 
 
 class EventWatcher(WatcherBase):
-    def __init__(self, level_range, interval, callbacks):
-        super(EventWatcher, self).__init__(interval, callbacks)
+    def __init__(self, level_range, interval):
+        super(EventWatcher, self).__init__(interval)
         self.level_range = level_range
         self.session = requests.Session()
         retries = Retry(

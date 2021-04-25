@@ -5,6 +5,14 @@ from led_watcher.constants import PIN_BY_LED_COLOR, BEEP
 from led_watcher.status import status
 
 
+async def beep(n, interval1, interval2):
+    for _ in range(n):
+        GPIO.output(BEEP, True)
+        await asyncio.sleep(interval1)
+        GPIO.output(BEEP, False)
+        await asyncio.sleep(interval2)
+
+
 async def beep_info():
     GPIO.output(BEEP, True)
     await asyncio.sleep(0.005)
