@@ -49,32 +49,28 @@ def on_button_pressed(_):
         GPIO.output(pin, False)
 
 
-# async def main():
 all_watchers = [
     watchers.EventWatcher(
         level_range=(logging.ERROR, logging.ERROR + 50),
         range_state=30,
-        interval=5,
+        interval=5.123,
     ),
     watchers.EventWatcher(
         level_range=(logging.WARNING, logging.ERROR),
         range_state=20,
-        interval=30,
+        interval=30.456,
     ),
     watchers.TimeWatcher(
         timetuple=(11, 45),
-        interval=5,
+        interval=5.567,
     ),
     watchers.TimeWatcher(
         timetuple=(18, 0),
-        interval=5,
+        interval=5.678,
     ),
     watchers.TimeWatcher(
-        timetuple=(23, 48),
-        interval=5,
-    ),
-    watchers.CycleWatcher(
-        interval=3,
+        timetuple=(23, 10),
+        interval=5.363,
     ),
 ]
 

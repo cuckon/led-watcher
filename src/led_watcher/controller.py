@@ -18,7 +18,7 @@ class CoroutineFactory:
 callbacks_by_signal = {
     0:  # Heartbeat
     [
-        CoroutineFactory(callbacks.blink_if_off, 'blue', 0.01),
+        CoroutineFactory(callbacks.blink_if_off, 'blue', 0.001),
     ],
 
     10: # Info
