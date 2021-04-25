@@ -53,10 +53,12 @@ def on_button_pressed(_):
 all_watchers = [
     watchers.EventWatcher(
         level_range=(logging.ERROR, logging.ERROR + 50),
+        range_state=30,
         interval=5,
     ),
     watchers.EventWatcher(
         level_range=(logging.WARNING, logging.ERROR),
+        range_state=20,
         interval=30,
     ),
     watchers.TimeWatcher(

@@ -35,6 +35,7 @@ class WatcherBase:
             yield self.state()
 
 
+# TODO: Can be optimized by sleep (target time - current)
 class TimeWatcher(WatcherBase):
     def __init__(self, timetuple, interval):
         super(TimeWatcher, self).__init__(interval)
@@ -47,19 +48,20 @@ class TimeWatcher(WatcherBase):
         hit = self._last_check_point.time() < self.time <= now.time()
 
         self._last_check_point = now
-        return hit
+        return 10 if hit else 0
 
 
 class CycleWatcher(WatcherBase):
     def state(self):
-        return 1
+        return 0
 
 
 class EventWatcher(WatcherBase):
-    def __init__(self, level_range, interval):
+    def __init__(self, level_range, range_state, interval):
         super(EventWatcher, self).__init__(interval)
         self.level_range = level_range
         self.session = requests.Session()
+        self.range_state = range_state
         retries = Retry(
             total=5,
             backoff_factor=1,
@@ -80,15 +82,15 @@ class EventWatcher(WatcherBase):
         try:
             response = requests.get(url)
         except requests.exceptions.ConnectionError:
-            return 2
+            return 40
 
         if response.status_code != 200:
             self.logger.error(response.text)
-            return 1
+            return 40
 
         data = response.json()
         if data['count']:
             self.logger.debug(data['data'])
-            return 1
+            return self.range_state
 
         return 0
