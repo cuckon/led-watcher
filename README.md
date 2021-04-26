@@ -7,7 +7,7 @@ It uses 3 LEDs and a buzzer to indicate the events you are interested in. Like w
 
 ### Features
 - Indicates warnings and errors respectively using *yellow* and *red*.
-- *Blue* is for time reminder.
+- *Blue* is for time reminder, and heartbeat.
 - Identifiable buzzer output for different level of event.
 - "Mark as read" button.
 - Lights are blinkly turned on, which makes it easy for you to tell which light it is after you hear the beep and head up.

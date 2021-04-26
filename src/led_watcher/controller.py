@@ -4,6 +4,7 @@ from led_watcher import callbacks
 
 
 class CoroutineFactory:
+    """Make fresh coroutine with given coroutine."""
     def __init__(self, func, *args, **kwargs):
         self.func = func
         self.args = args
@@ -43,6 +44,7 @@ callbacks_by_signal = {
 
 
 class Caller:
+    """Launches the watcher and handles its state with proper callbacks."""
     def __init__(self, watcher):
         self.watcher = watcher
 
@@ -53,4 +55,5 @@ class Caller:
 
 
 async def main(watchers):
+    """Launches all the watchers."""
     await asyncio.gather(*[Caller(w).run() for w in watchers])

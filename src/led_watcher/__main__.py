@@ -17,6 +17,7 @@ LOGGER.setLevel(logging.DEBUG)
 
 
 def patch():
+    """Set status when set output GPIO."""
     gpio_output = GPIO.output
 
     def _output(pin, val):
@@ -45,6 +46,7 @@ def init():
 
 
 def on_button_pressed(_):
+    """Get called when button is pressed."""
     for pin in PIN_BY_LED_COLOR.values():
         GPIO.output(pin, False)
 

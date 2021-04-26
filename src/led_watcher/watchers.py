@@ -18,6 +18,11 @@ url_events = (
 
 
 class WatcherBase:
+    """Base class of all watcher class.
+
+    A watcher is an object that can return state based on the thing it is
+    interested in.
+    """
     def __init__(self, interval):
         self.interval = interval
         self.time_delta = datetime.timedelta(seconds=interval)
@@ -26,17 +31,19 @@ class WatcherBase:
         self.logger = logging.getLogger(__name__)
 
     def state(self):
-        self._last_check_point = datetime.datetime.now()
-        return 0
+        """Implement this to inform the controller that something happened."""
+        raise NotImplementedError
 
     async def watch(self):
         while True:
             await asyncio.sleep(self.interval)
             yield self.state()
+            self._last_check_point = datetime.datetime.now()
 
 
 # TODO: Can be optimized by sleep (target time - current)
 class TimeWatcher(WatcherBase):
+    """Watch if it hit specified time."""
     def __init__(self, timetuple, interval):
         super(TimeWatcher, self).__init__(interval)
         self.time = datetime.time(*timetuple)
@@ -52,11 +59,13 @@ class TimeWatcher(WatcherBase):
 
 
 class CycleWatcher(WatcherBase):
+    """Raises periodically."""
     def state(self):
         return 0
 
 
 class EventWatcher(WatcherBase):
+    """Watch if events of specified range occur."""
     def __init__(self, level_range, range_state, interval):
         super(EventWatcher, self).__init__(interval)
         self.level_range = level_range
@@ -75,9 +84,6 @@ class EventWatcher(WatcherBase):
             self.level_range[0], self.level_range[1],
             self._last_check_point.isoformat()
         )
-
-        # TODO: rename `state()` properly
-        super(EventWatcher, self).state()   # update
 
         try:
             response = requests.get(url)
